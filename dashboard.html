@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacy Pro System - لوحة التحكم الشاملة</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background-color: #f3f7fc; color: #244665; }
+        header { background-color: #12bfa5; color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .container { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+        .nav-tabs { display: flex; background: white; border-radius: 12px 12px 0 0; padding: 8px; gap: 8px; border-bottom: 2px solid #e2e8f0; overflow-x: auto; }
+        .tab-btn { border: none; background: transparent; padding: 10px 20px; font-weight: 600; cursor: pointer; border-radius: 8px; color: #64748b; font-size: 14px; white-space: nowrap; }
+        .tab-btn.active { background-color: #12bfa5; color: white; }
+        .card { background: white; padding: 24px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .hidden { display: none !important; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; }
+        input[type="text"], input[type="password"], input[type="file"] { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; }
+        .btn { background-color: #12bfa5; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; transition: 0.2s; }
+        .btn:hover { background-color: #079780; }
+        .btn-green { background-color: #059669; }
+        .btn-green:hover { background-color: #047857; }
+        table { width: 100%; border-collapse: collapse; text-align: right; font-size: 14px; margin-top: 12px; }
+        th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
+        th { background-color: #f7fbff; color: #66809a; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .badge-green { background-color: #d1fae5; color: #065f46; }
+        .badge-amber { background-color: #fef3c7; color: #92400e; }
+        .chat-box { height: 300px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #f8fafc; margin-bottom: 12px; }
+        .chat-msg { padding: 8px 12px; border-radius: 8px; margin-bottom: 8px; max-width: 80%; font-size: 14px; }
+        .chat-bot { background-color: #e2f8f3; color: #079780; margin-right: auto; }
+        .chat-user { background-color: #12bfa5; color: white; margin-left: auto; text-align: left; }
+        pre { background: #f8fafc; padding: 12px; border-radius: 8px; font-size: 12px; border: 1px solid #e2e8f0; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h2>🏥 Pharmacy Pro System - لوحة التحكم</h2>
+        <div id="userDisplayName" style="font-size: 14px; background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 6px;">غير مسجل الدخول</div>
+    </header>
+
+    <div class="container">
+        <div class="nav-tabs">
+            <button onclick="switchTab('loginTab')" id="btn-loginTab" class="tab-btn active">🔑 تسجيل الدخول</button>
+            <button onclick="switchTab('inventoryTab')" id="btn-inventoryTab" class="tab-btn">💊 إدارة الأدوية والمخزون</button>
+            <button onclick="switchTab('chatbotTab')" id="btn-chatbotTab" class="tab-btn">🤖 بوت شاشة الصيدلية</button>
+            <button onclick="switchTab('scannerTab')" id="btn-scannerTab" class="tab-btn">📷 ماسح الروشتات الضوئي</button>
+        </div>
+
+        <!-- 1. LOGIN TAB -->
+        <div id="loginTab" class="card" style="max-width: 450px; margin: auto;">
+            <h3 style="margin-bottom: 16px; color: #12bfa5;">تسجيل الدخول للنظام</h3>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>اسم المستخدم</label>
+                    <input type="text" id="loginUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn">دخول</button>
+            </form>
+            <div id="loginStatus" style="margin-top: 12px; font-size: 14px; font-weight: 600;"></div>
+        </div>
+
+        <!-- 2. INVENTORY TAB -->
+        <div id="inventoryTab" class="card hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3>قائمة الأدوية والمخزون الحالية</h3>
+                <button onclick="loadProducts()" class="btn" style="width: auto; padding: 6px 16px;">🔄 تحديث القائمة</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>اسم الدواء</th>
+                        <th>الباركود</th>
+                        <th>سعر البيع</th>
+                        <th>الكمية المتاحة</th>
+                        <th>الوحدة</th>
+                    </tr>
+                </thead>
+                <tbody id="productsTableBody">
+                    <tr><td colspan="6" style="text-align: center; color: #64748b;">سجل الدخول أولاً لعرض الأدوية.</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 3. CHATBOT TAB -->
+        <div id="chatbotTab" class="card hidden" style="max-width: 650px; margin: auto;">
+            <h3 style="margin-bottom: 12px; color: #12bfa5;">مساعد شاشة الصيدلية الذكي</h3>
+            <div id="chatMessages" class="chat-box">
+                <div class="chat-msg chat-bot">أهلاً بك! كيف يمكنني مساعدتك اليوم في البحث عن الأدوية أو النواقص؟</div>
+            </div>
+            <form onsubmit="sendChatMessage(event)" style="display: flex; gap: 8px;">
+                <input type="text" id="chatInput" placeholder="اكتب استفسارك هنا (مثال: هل متوفر بانادول؟)..." style="flex: 1;">
+                <button type="submit" class="btn" style="width: auto;">إرسال</button>
+            </form>
+        </div>
+
+        <!-- 4. SCANNER TAB -->
+        <div id="scannerTab" class="card hidden" style="max-width: 650px; margin: auto;">
+            <h3 style="margin-bottom: 12px; color: #12bfa5;">ماسح الروشتات الضوئي (OCR)</h3>
+            <form onsubmit="handleScanPrescription(event)" style="margin-bottom: 20px;">
+                <div class="form-group">
+                    <label>اختر صورة الروشتة للمسح الضوئي:</label>
+                    <input type="file" id="prescriptionFile" accept="image/*" required>
+                </div>
+                <button type="submit" class="btn btn-green">📷 فحص الروشتة واستخراج الأدوية</button>
+            </form>
+
+            <div id="scanResult" class="hidden">
+                <h4 style="margin-bottom: 6px;">النص المستخرج من الروشتة:</h4>
+                <pre id="rawExtractedText"></pre>
+
+                <h4 style="margin-top: 12px; margin-bottom: 6px;">الأدوية المطابقة في صيدليتك:</h4>
+                <div id="matchedMedicinesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "http://127.0.0.1:8000";
+        let authToken = localStorage.getItem("token") || "";
+
+        if (authToken) {
+            document.getElementById("userDisplayName").innerText = "مسجل الدخول";
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll(".card").forEach(el => el.classList.add("hidden"));
+            document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+            
+            document.getElementById(tabId).classList.remove("hidden");
+            document.getElementById("btn-" + tabId).classList.add("active");
+
+            if (tabId === 'inventoryTab' && authToken) {
+                loadProducts();
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById("loginUsername").value;
+            const p = document.getElementById("loginPassword").value;
+            const statusEl = document.getElementById("loginStatus");
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/login`, {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({username: u, password: p})
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    authToken = data.access_token;
+                    localStorage.setItem("token", authToken);
+                    statusEl.innerText = "تم تسجيل الدخول بنجاح!";
+                    statusEl.style.color = "#059669";
+                    document.getElementById("userDisplayName").innerText = "المستخدم: " + u;
+                    setTimeout(() => switchTab("inventoryTab"), 1000);
+                } else {
+                    statusEl.innerText = data.detail || "خطأ في تسجيل الدخول";
+                    statusEl.style.color = "#e11d48";
+                }
+            } catch (err) {
+                statusEl.innerText = "تعذر الاتصال بالسيرفر";
+                statusEl.style.color = "#e11d48";
+            }
+        }
+
+        async function loadProducts() {
+            if (!authToken) return;
+            const tbody = document.getElementById("productsTableBody");
+            try {
+                const res = await fetch(`${API_BASE}/products`, {
+                    headers: {"Authorization": `Bearer ${authToken}`}
+                });
+                if (res.ok) {
+                    const products = await res.json();
+                    if(products.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #64748b;">لا يوجد أدوية مسجلة.</td></tr>`;
+                    } else {
+                        tbody.innerHTML = products.map((p, i) => `
+                            <tr>
+                                <td>${i + 1}</td>
+                                <td><b>${p.name}</b></td>
+                                <td>${p.barcode || '—'}</td>
+                                <td>${p.selling_price} ج.م</td>
+                                <td><span class="badge ${p.quantity > 5 ? 'badge-green' : 'badge-amber'}">${p.quantity}</span></td>
+                                <td>${p.unit}</td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #e11d48;">فشل في جلب الأدوية.</td></tr>`;
+            }
+        }
+
+        async function sendChatMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById("chatInput");
+            const msg = input.value.trim();
+            if (!msg || !authToken) return;
+
+            const chatBox = document.getElementById("chatMessages");
+            chatBox.innerHTML += `<div class="chat-msg chat-user">${msg}</div>`;
+            input.value = "";
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const res = await fetch(`${API_BASE}/chatbot/query`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({message: msg})
+                });
+                const data = await res.json();
+                chatBox.innerHTML += `<div class="chat-msg chat-bot">${data.reply}</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch (e) {
+                chatBox.innerHTML += `<div class="chat-msg chat-bot" style="color:red;">خطأ في التواصل مع البوت</div>`;
+            }
+        }
+
+        async function handleScanPrescription(e) {
+            e.preventDefault();
+            if (!authToken) { alert("يرجى تسجيل الدخول أولاً"); return; }
+            const fileInput = document.getElementById("prescriptionFile");
+            if (!fileInput.files[0]) return;
+
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+
+            const resBox = document.getElementById("scanResult");
+            resBox.classList.add("hidden");
+
+            try {
+                const res = await fetch(`${API_BASE}/scanner/scan-prescription`, {
+                    method: "POST",
+                    headers: {"Authorization": `Bearer ${authToken}`},
+                    body: formData
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById("rawExtractedText").innerText = data.extracted_text || "لم يتم العثور على نص واضح";
+                    const medList = document.getElementById("matchedMedicinesList");
+                    if (data.matched_products && data.matched_products.length > 0) {
+                        medList.innerHTML = data.matched_products.map(p => `
+                            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; padding: 10px; border-radius: 8px; margin-bottom: 6px; display: flex; justify-content: space-between;">
+                                <b>${p.name}</b>
+                                <span>السعر: ${p.price} ج.م | المتاح: ${p.quantity}</span>
+                            </div>
+                        `).join('');
+                    } else {
+                        medList.innerHTML = `<p style="font-size: 13px; color: #64748b;">لم يطابق أي دواء في قاعدة البيانات الحالية.</p>`;
+                    }
+                    resBox.classList.remove("hidden");
+                }
+            } catch (e) {
+                alert("حدث خطأ أثناء فحص الصورة");
+            }
+        }
+    </script>
+</body>
+</html>
